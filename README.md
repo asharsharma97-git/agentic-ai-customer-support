@@ -19,65 +19,19 @@ The agent can:
 
 ## Architecture
 
-```text
-                         ┌───────────────────────┐
-                         │       Customer        │
-                         └───────────┬───────────┘
-                                     │
-                                     ▼
-                         ┌───────────────────────┐
-                         │  AgentCore Runtime    │
-                         │    Strands Agent      │
-                         │   Amazon Nova Model   │
-                         └───────────┬───────────┘
-                                     │
-             ┌───────────────────────┼────────────────────────┐
-             │                       │                        │
-             ▼                       ▼                        ▼
-    ┌─────────────────┐    ┌─────────────────┐      ┌─────────────────┐
-    │ AgentCore Memory│    │ Bedrock         │      │ AgentCore       │
-    │                 │    │ Knowledge Base  │      │ Code Interpreter│
-    │ Customer facts  │    │                 │      │                 │
-    │ + preferences   │    │ RAG retrieval   │      │ Exact business  │
-    └─────────────────┘    └─────────────────┘      │ calculations    │
-                                                    └─────────────────┘
-             │
-             │                 ┌─────────────────┐
-             └────────────────►│ AgentCore       │
-                               │ Browser         │
-                               │ Live web access │
-                               └─────────────────┘
+![AI Customer Support Agent Architecture](images/architecture.png)
 
-                                     │
-                                     ▼
-                           ┌─────────────────────┐
-                           │ AgentCore Gateway   │
-                           │        MCP          │
-                           └──────────┬──────────┘
-                                      │
-                         ┌────────────┴────────────┐
-                         ▼                         ▼
-                ┌─────────────────┐       ┌─────────────────┐
-                │  API Gateway    │       │ AWS Lambda      │
-                │  Order APIs     │       │ Refund Tools    │
-                └────────┬────────┘       └─────────────────┘
-                         │
-                         ▼
-                ┌─────────────────┐
-                │ Order Tracker   │
-                │ Lambda          │
-                └─────────────────┘
-```
+The **Strands Agent** acts as the orchestration layer, using Amazon Nova for reasoning while selecting specialized tools based on the customer's request. Amazon Bedrock AgentCore provides the managed runtime and supporting capabilities for memory, code execution, browser interaction, and external tool connectivity.
 
 ## Key Capabilities
 
 ### Tool Calling with MCP
 
-The agent connects to an **Amazon Bedrock AgentCore Gateway** using the Model Context Protocol (MCP).
+The agent connects to an **Amazon Bedrock AgentCore Gateway** using the **Model Context Protocol (MCP)**.
 
-Gateway tools allow the model to perform customer-support actions instead of attempting to answer operational questions from model knowledge.
+Rather than asking the language model to invent operational information, Gateway tools allow the agent to interact with backend services.
 
-The implemented workflows include:
+Implemented workflows include:
 
 - Retrieve an order
 - Retrieve customer information
@@ -86,30 +40,32 @@ The implemented workflows include:
 - Check refund status
 - Generate a return label
 
-### Retrieval-Augmented Generation
+The order workflow uses **Amazon API Gateway and AWS Lambda**, while refund operations are exposed through a Lambda-backed Gateway integration.
+
+### Retrieval-Augmented Generation (RAG)
 
 Product information, return policies, and loyalty-program information are stored in an **Amazon Bedrock Knowledge Base**.
 
 A custom `search_knowledge_base` tool calls the Bedrock Retrieve API and supplies relevant document chunks to the agent.
 
-This keeps product and policy responses grounded in the provided knowledge source rather than relying only on the model's pretrained knowledge.
+This allows product and policy responses to be grounded in the provided knowledge source rather than relying only on the model's pretrained knowledge.
 
 ### Long-Term Customer Memory
 
-**AgentCore Memory** allows customer context to persist between independent conversations.
+**AgentCore Memory** allows useful customer context to persist between independent conversations.
 
-Two types of information are stored:
+The implementation stores and retrieves:
 
 - Customer facts
-- Customer communication preferences
+- Communication preferences
 
-A custom Strands hook retrieves relevant memories before an invocation and adds them to the agent's context. After the interaction, the completed conversation is stored so useful information can be extracted for future sessions.
+A custom Strands hook retrieves relevant memories before an invocation and adds them to the agent's context. After an interaction, the completed conversation can be stored so useful information is available in future sessions.
 
-For example, a customer can introduce themselves and request concise responses in one session, then start a completely new session where the agent recalls both pieces of information.
+For example, a customer can introduce themselves and request concise responses in one session, then start a new session where the agent recalls both pieces of information.
 
 ### Deterministic Business Calculations
 
-Loyalty calculations are delegated to **AgentCore Code Interpreter** instead of asking the language model to perform business arithmetic itself.
+Loyalty calculations are delegated to **AgentCore Code Interpreter** instead of relying on the language model to perform business arithmetic.
 
 The calculation logic handles:
 
@@ -123,49 +79,57 @@ The Python calculation executes inside an isolated code session and returns stru
 
 ### Live Browser Interaction
 
-The agent integrates **AgentCore Browser**, allowing it to navigate a live webpage and retrieve information that is not available through its static knowledge base or model context.
+The agent integrates **AgentCore Browser**, allowing it to navigate live webpages when information needs to be retrieved outside its static knowledge base.
 
-This demonstrates how an agent can combine generative AI with live external interaction.
+This demonstrates how an agent can combine generative AI reasoning with live external interaction.
 
 ## Example Workflows
 
-The deployed agent was tested across several independent workflows.
+### Order Tracking
 
-**Order tracking**
+**Customer**
 
-> "Can you track order ORD-001?"
+> Can you track order ORD-001?
 
-The agent selects the appropriate Gateway tool and returns the order status, carrier, tracking number, and expected delivery information.
+The agent selects the appropriate Gateway tool and retrieves the order status, carrier, tracking number, and estimated delivery information.
 
-**Refund processing**
+### Refund Processing
 
-> "I want to return my Kindle Paperwhite (ORD-002). Please initiate a refund."
+**Customer**
 
-The agent calls the refund workflow and returns the generated refund ID, approval status, and processing timeline.
+> I want to return my Kindle Paperwhite (ORD-002). Please initiate a refund.
 
-**RAG**
+The agent invokes the refund workflow and returns a generated refund ID, approval status, and processing timeline.
 
-> "What are the benefits of the Platinum loyalty tier?"
+### Knowledge Retrieval
 
-The agent retrieves the relevant loyalty-program information from the Bedrock Knowledge Base.
+**Customer**
 
-**Cross-session memory**
+> What are the benefits of the Platinum loyalty tier?
 
-A customer tells the agent:
+The agent retrieves the relevant loyalty-program information from the Bedrock Knowledge Base using RAG.
 
-> "Hi, I am Jane. I prefer concise responses."
+### Cross-Session Memory
 
-A new session can subsequently recall both the customer's name and communication preference.
+In one session, a customer tells the agent:
 
-**Code execution**
+> Hi, I am Jane. I prefer concise responses.
 
-> "I am a Gold member with 4250 points. Calculate my discount on a $150 standard order."
+In a separate session, the agent can retrieve the stored customer context and recall both the customer's name and communication preference.
 
-The agent delegates the business calculation to Code Interpreter and returns the redemption, membership discount, final total, and remaining points.
+### Loyalty Calculation
 
-**Browser**
+**Customer**
 
-> "Go to https://www.udacity.com and tell me the page title."
+> I am a Gold member with 4250 points. Calculate my discount on a $150 standard order.
+
+The agent delegates the business calculation to Code Interpreter and returns structured information about point redemption, membership discount, final total, and remaining points.
+
+### Browser Interaction
+
+**Customer**
+
+> Go to https://www.udacity.com and tell me the page title.
 
 The agent uses its browser capability to access the live webpage and retrieve its current title.
 
@@ -179,8 +143,8 @@ The agent uses its browser capability to access the live webpage and retrieve it
 | AgentCore Gateway                | External tool integration                |
 | Model Context Protocol (MCP)     | Tool discovery and invocation            |
 | AWS Lambda                       | Order and refund backend functions       |
-| Amazon API Gateway               | Order service REST endpoints             |
-| Amazon Bedrock Knowledge Bases   | RAG                                      |
+| Amazon API Gateway               | Order-service REST endpoints             |
+| Amazon Bedrock Knowledge Bases   | Retrieval-Augmented Generation           |
 | Amazon S3                        | Knowledge-base document storage          |
 | Amazon OpenSearch Serverless     | Vector storage                           |
 | AgentCore Memory                 | Cross-session customer memory            |
@@ -193,18 +157,40 @@ The agent uses its browser capability to access the live webpage and retrieve it
 
 ```text
 .
-├── main.py
+├── images/
+│   └── architecture.png
 ├── lambda/
+│   ├── lambda_schema
 │   ├── order_tracker.py
-│   ├── refund_processor.py
-│   └── lambda_schema
+│   └── refund_processor.py
+├── main.py
 ├── product_catalog.txt
 ├── pyproject.toml
 ├── uv.lock
 └── README.md
 ```
 
-`main.py` contains the primary agent implementation, including the RAG tool, memory hooks, loyalty calculation tool, browser integration, MCP Gateway connection, and AgentCore Runtime entrypoint.
+### `main.py`
+
+Contains the primary agent implementation, including:
+
+- AgentCore application entrypoint
+- Strands agent configuration
+- MCP Gateway connection and tool loading
+- Knowledge Base retrieval tool
+- Long-term memory hooks
+- Loyalty calculation tool
+- Code Interpreter integration
+- Browser integration
+- System instructions and response handling
+
+### `lambda/`
+
+Contains the backend functions and schema used by the customer-support tools for order and refund workflows.
+
+### `product_catalog.txt`
+
+Provides the product, policy, and loyalty information used by the Bedrock Knowledge Base for RAG.
 
 ## What I Learned
 
@@ -212,20 +198,22 @@ The biggest takeaway from this project was understanding that building an AI age
 
 Different responsibilities are better handled by different components:
 
-- LLMs handle reasoning and orchestration
-- APIs and Lambda functions perform operational actions
-- RAG provides grounded domain knowledge
-- Memory maintains useful context across sessions
-- Code Interpreter handles deterministic calculations
-- Browser tools provide access to live information
+- **LLMs** handle reasoning and orchestration
+- **APIs and Lambda functions** perform operational actions
+- **RAG** provides grounded domain knowledge
+- **Memory** maintains useful context across sessions
+- **Code Interpreter** handles deterministic calculations
+- **Browser tools** provide access to live information
 
-One of the most valuable parts of the project was troubleshooting the Browser integration after deployment. Resolving runtime and authorization problems required working through **CloudWatch logs, IAM permissions, deployed runtime behaviour, and isolated browser testing** rather than only modifying application code.
+One of the most valuable parts of the project was troubleshooting the Browser integration after deployment.
+
+Resolving runtime and authorization problems required working through **CloudWatch logs, IAM permissions, deployed runtime behaviour, and isolated browser testing** rather than only modifying application code.
 
 That experience reinforced the importance of observability and systematic troubleshooting when moving an AI application from local development into a cloud runtime.
 
 ## Production Considerations
 
-A production implementation would require additional controls around authentication, authorization, observability, and high-impact actions.
+A production implementation would require additional controls around authentication, authorization, observability, and customer-impacting actions.
 
 Examples include:
 
@@ -235,12 +223,14 @@ Examples include:
 - Add structured monitoring and alerting for tool failures
 - Implement stronger error handling and retry strategies
 - Add audit logging for customer-impacting actions
-- Protect customer memory using appropriate retention and access policies
+- Protect customer memory with appropriate retention and access policies
 
-These controls become increasingly important as agents move from answering questions to taking actions on behalf of users.
+These controls become increasingly important as AI agents move from simply answering questions to taking actions on behalf of users.
 
-## Program
+## AWS AI & ML Scholars
 
-This project was completed as part of the **AWS AI & ML Scholars program on Udacity**, where I worked with AWS generative AI and agentic AI technologies through hands-on projects.
+This project was completed as part of the **AWS AI & ML Scholars program on Udacity**.
 
-The project provided practical experience building, deploying, integrating, testing, and troubleshooting a multi-tool AI agent in AWS.
+Through the project, I gained hands-on experience building, integrating, deploying, testing, and troubleshooting an agentic AI application using AWS services and the Strands Agents SDK.
+
+The project also reinforced a broader lesson: effective AI systems are not just models. They are systems that combine **reasoning, data, memory, tools, permissions, APIs, observability, and cloud infrastructure** to accomplish useful tasks.
