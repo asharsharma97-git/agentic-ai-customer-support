@@ -227,10 +227,10 @@ Examples include:
 
 These controls become increasingly important as AI agents move from simply answering questions to taking actions on behalf of users.
 
-## AWS AI & ML Scholars
+## Project Attribution
 
-This project was completed as part of the **AWS AI & ML Scholars program on Udacity**.
+This project was developed as part of the **AWS AI & ML Scholars program on Udacity**.
 
-Through the project, I gained hands-on experience building, integrating, deploying, testing, and troubleshooting an agentic AI application using AWS services and the Strands Agents SDK.
+Udacity provided the project scenario, starter code structure, sample customer-support data, and portions of the supporting infrastructure code used as the foundation for the assignment. I completed the required agent implementation and integrations, including the AgentCore deployment, MCP Gateway integration, Knowledge Base retrieval, long-term memory, Code Interpreter workflow, Browser integration, testing, and deployment troubleshooting.
 
-The project also reinforced a broader lesson: effective AI systems are not just models. They are systems that combine **reasoning, data, memory, tools, permissions, APIs, observability, and cloud infrastructure** to accomplish useful tasks.
+This repository is shared for **educational and portfolio purposes** to demonstrate my implementation and learning. Original Udacity-provided materials remain subject to their respective ownership and licensing terms.
