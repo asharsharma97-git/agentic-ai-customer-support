@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+.bedrock_agentcore/
+build-details.json
+deploy-error.txt
+*-policy.json
+.bedrock_agentcore.yaml

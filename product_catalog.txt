@@ -1,0 +1,85 @@
+# Amazon Product Catalog & Support Reference
+
+## Products
+
+### Wireless Headphones Pro (PROD-001)
+Price: $89.99
+Battery Life: 30 hours
+Connectivity: Bluetooth 5.3, USB-C charging
+Features: Active Noise Cancellation, Transparency Mode, Foldable design
+Compatibility: iOS, Android, Windows, Mac
+Warranty: 1-year limited warranty
+Return Policy: 30 days unopened, 15 days opened
+
+### Kindle Paperwhite (PROD-002)
+Price: $139.99
+Storage: 8GB or 32GB
+Display: 6.8 inch 300 PPI glare-free
+Battery: Up to 10 weeks
+Waterproof: IPX8 rated
+Connectivity: Wi-Fi and optional Cellular
+Warranty: 1 year
+Return Policy: 30 days
+
+### Echo Dot 5th Gen (PROD-003)
+Price: $49.99
+Speaker: 1.73 inch front-firing speaker
+Smart Home: Zigbee, Matter, Thread compatible
+Features: Alexa built-in, temperature sensor, motion detection
+Warranty: 1 year
+Return Policy: 30 days
+
+### Amazon Halo Rise (PROD-004)
+Price: $139.99
+Function: Sleep tracker with sunrise alarm clock
+Type: Non-wearable bedside device
+Power: Plugs into wall
+Includes: Free 6-month Halo membership
+Warranty: 1 year
+
+## Return and Refund Policy
+
+### Return Windows
+- Standard items: 30 days from delivery date
+- Electronics: 15 days from delivery date
+- All items must be in original condition with all accessories included
+- Free returns for Prime members
+
+### Refund Timeline
+- Credit or Debit Card: 3-5 business days
+- Amazon Gift Card: 2-3 hours
+- Bank Account via ACH: up to 10 business days
+
+### How to Start a Return
+1. Go to Your Orders in your Amazon account
+2. Select the item you want to return
+3. Choose a reason and preferred return method
+4. Print the label or show QR code at the drop-off point
+
+## Loyalty Rewards Program
+
+### Tiers
+- Silver: 0 to 999 points
+- Gold: 1000 to 4999 points
+- Platinum: 5000 or more points
+
+### Earning Points
+- Standard items: 1 point per $1 spent
+- Amazon devices: 2 points per $1 spent
+- Amazon Fresh: 5 points per $1 spent
+
+### Redeeming Points
+- 100 points equals $1 discount
+- Minimum redemption is 500 points
+- Points are valid for 2 years from the date earned
+
+### Tier Benefits
+- Gold: Free expedited shipping, 10% discount on accessories
+- Platinum: Free same-day shipping, 15% discount, priority customer support
+
+## Order Status Definitions
+- PROCESSING: Order confirmed and being prepared for shipment
+- SHIPPED: Package handed to the carrier
+- OUT FOR DELIVERY: Package is with the local delivery agent today
+- DELIVERED: Package confirmed as delivered
+- CANCELLED: Order cancelled and refund initiated automatically

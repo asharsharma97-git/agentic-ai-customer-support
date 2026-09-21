@@ -1,0 +1,19 @@
+[project]
+name = "csai"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "asyncio>=4.0.0",
+    "bedrock-agentcore>=1.4.1",
+    "bedrock-agentcore-starter-toolkit>=0.3.0",
+    "chardet>=6.0.0.post1",
+    "nest-asyncio>=1.6.0",
+    "playwright>=1.58.0",
+    "strands-agents>=1.28.0",
+    "strands-agents-tools>=0.2.21",
+    "urllib3>=2.6.3",
+]
+[tool.setuptools]
+py-modules = ["main"]
